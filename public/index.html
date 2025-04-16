@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="stylesheet" href="css/style.css">
+        <meta charset="UTF-8" />
+        <title>Striker Royale</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Yantramanav:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <div id="app">
+            <div v-if="!joined" class="nameEntry">
+                <input v-model="playerName" @input="limitName" placeholder="Enter your name" />
+                <button @click="joinGame">Join Game</button>
+            </div>
+ 
+            <canvas ref="gameCanvas" :class="{ portrait: rotation !== 0 }"></canvas>
+        </div>
+    </body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js"></script>
+</html>
