@@ -10,7 +10,7 @@
     </head>
     <body>
         <div id="app">
-            <div v-if="!joined" class="nameEntry">
+            <div v-if="!joined" class="nameEntry" :class="{ portraitName: rotation !== 0 }">
                 <input v-model="playerName" @input="limitName" placeholder="Enter your name" />
                 <button @click="joinGame">Join Game</button>
             </div>
