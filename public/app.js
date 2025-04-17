@@ -27,6 +27,7 @@ Vue.createApp({
 			redIcon: null,
 			blueIcon: null,
 			ballIcon: null,
+			ringIcon: null,
 
 			goalScored: false,
 			goalTextScale: 20,
@@ -36,14 +37,15 @@ Vue.createApp({
 
 			lastTimestamp: null,
 			winner: null,
-			rotation: 0
+			rotation: 0,
+			ringRotation: 0
 		};
 	},
 
 	methods: {
 		connectSocket() {
-			this.socket = new WebSocket("ws://localhost:3000");
-			//this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
+			//this.socket = new WebSocket("ws://localhost:3000");
+			this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
 
 			this.socket.addEventListener("open", () => {
 				console.log("Connected to server");
@@ -301,6 +303,19 @@ Vue.createApp({
 			}
 
 			Object.values(this.players).forEach((p) => {
+				if (this.ringIcon && this.ringIcon.complete && this.myPlayerId != null && p === this.players[this.myPlayerId]) {
+					this.ringRotation += 0.01;
+					if (this.ringRotation >= 360) {
+						this.ringRotation = 0;
+					}
+					const imageSize = p.radius * 2 + 5;
+					ctx.save();
+					ctx.translate(p.x, p.y);
+					ctx.rotate(this.ringRotation);
+					ctx.drawImage(this.ringIcon, -imageSize / 2, -imageSize / 2, imageSize, imageSize);
+					ctx.restore();
+				}				
+
 				if (p.team === 'A' && this.blueIcon && this.blueIcon.complete) {
 					const width = p.radius * 2;
 					ctx.drawImage(this.blueIcon, p.x - p.radius, p.y - p.radius, width, width);
@@ -475,6 +490,8 @@ Vue.createApp({
 		this.blueIcon.src = "images/Blue.png";
 		this.ballIcon = new Image();
 		this.ballIcon.src = "images/Ball.png";
+		this.ringIcon = new Image();
+		this.ringIcon.src = "images/Ring.png";
 	
 		window.addEventListener('mousedown', this.onPointerDown);
 		window.addEventListener('mousemove', this.onPointerMove);
