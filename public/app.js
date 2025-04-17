@@ -30,19 +30,20 @@ Vue.createApp({
 
 			goalScored: false,
 			goalTextScale: 20,
-			lastTimestamp: null,
 			goalMsgY: 20,
 			scoreTransparency: 0,
 			winnerTextScale: 20,
 
+			lastTimestamp: null,
+			winner: null,
 			rotation: 0
 		};
 	},
 
 	methods: {
 		connectSocket() {
-			//this.socket = new WebSocket("ws://localhost:3000");
-			this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
+			this.socket = new WebSocket("ws://localhost:3000");
+			//this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
 
 			this.socket.addEventListener("open", () => {
 				console.log("Connected to server");
@@ -193,21 +194,16 @@ Vue.createApp({
 			const delta = (timestamp - this.lastTimestamp) / 1000;
 			this.lastTimestamp = timestamp;
 
-			if (window.innerWidth <= 540 || window.matchMedia('(orientation: portrait)').matches) {
-				this.rotation = -Math.PI * 0.5;
+			this.rotation = (window.innerWidth <= 540 || window.matchMedia('(orientation: portrait)').matches) ? (this.myPlayerId && this.players[this.myPlayerId].team === "B" ?  Math.PI * 0.5 : -Math.PI * 0.5): 0;
 
-				if (this.myPlayerId !== null && this.players[this.myPlayerId].team === 'B') {
-					this.rotation = -this.rotation;
-				}
-			} else {
-				this.rotation = 0;
-			}
+			var canvas = this.$refs.gameCanvas;
+			canvas.width  = (this.rotation === 0) ? this.gameWidth : this.gameHeight;
+			canvas.height = (this.rotation === 0) ? this.gameHeight : this.gameWidth;
 
 			const ctx = this.ctx;
-			ctx.clearRect(0, 0, this.gameWidth, this.gameHeight);
-			ctx.save();
+			ctx.setTransform(1, 0, 0, 1, 0, 0);
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-			const canvas = this.$refs.gameCanvas;
 			if (this.rotation !== 0) {
 				canvas.width = this.gameHeight;
 				canvas.height = this.gameWidth;
@@ -229,7 +225,6 @@ Vue.createApp({
 				ctx.fillStyle = 'green';
 				ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
 			}
-			ctx.restore();
 
 			ctx.font = '40px Bebas Neue';
 			ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
