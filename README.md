@@ -2,7 +2,7 @@
 
 A real-time physics-based multiplayer soccer game built with Vue and WebSockets.
 
-**(https://your-hosted-game-link.com)**  
+**(https://s25-websocket-zakb3005-production.up.railway.app)**  
 
 - Playable on any modern browser
 - Supported on mobile devices
