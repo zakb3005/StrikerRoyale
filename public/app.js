@@ -28,6 +28,7 @@ Vue.createApp({
 			blueIcon: null,
 			ballIcon: null,
 			ringIcon: null,
+			qrImg: null,
 
 			goalScored: false,
 			goalTextScale: 20,
@@ -38,7 +39,21 @@ Vue.createApp({
 			lastTimestamp: null,
 			winner: null,
 			rotation: 0,
-			ringRotation: 0
+			ringRotation: 0,
+
+			crowdLoop: null,
+			goalCheer: null,
+			endWhistle: null,
+			winCheer: null,
+			ballHit: null,
+			ballHit2: null,
+			ballHit3: null,
+			
+			goalWasPlaying: false,
+			winWasPlaying: false,
+			soundOn: false,
+			spectating: false,
+			hideMenu: false
 		};
 	},
 
@@ -62,6 +77,8 @@ Vue.createApp({
 					this.winner = msg.data.winner;
 				} else if (msg.type === 'init') {
 					this.myPlayerId = msg.playerId;
+				} else if (msg.type === 'ballHit') {
+					this.playBallHitSound();
 				}
 			});
 		},
@@ -185,6 +202,15 @@ Vue.createApp({
 		lerp(start, end, amount) {
 			return (1 - amount) * start + amount * end;
 		},
+
+		playBallHitSound() {
+			const sources = [this.ballHit, this.ballHit2, this.ballHit3];
+			const original = sources[Math.floor(Math.random() * sources.length)];
+		
+			const sfx = original.cloneNode();
+			sfx.volume = original.volume;
+			sfx.play();
+		},			
 
 		gameLoop(timestamp) {
 			requestAnimationFrame(this.gameLoop);
@@ -371,6 +397,11 @@ Vue.createApp({
 			}
 
 			if (this.goalScored.team != null) {
+				if (!this.goalWasPlaying && this.soundOn) {
+					this.goalCheer.play();
+				}
+				this.goalWasPlaying = true;
+
 				this.goalTextScale = this.lerp(this.goalTextScale, 160, 4 * delta);
 
 				if (this.goalTextScale > 150) {
@@ -440,12 +471,18 @@ Vue.createApp({
 				ctx.strokeText(goalText, (this.gameWidth*0.5) - (goalTextScale.width*0.5), (this.gameHeight*0.5) + (goalTextHeight*0.5));
 				ctx.fillText(goalText, (this.gameWidth*0.5) - (goalTextScale.width*0.5), (this.gameHeight*0.5) + (goalTextHeight*0.5));
 			} else if (this.goalScored.team == null) {
+				this.goalWasPlaying = false;
 				this.goalTextScale = 20;
 				this.goalMsgY = 20;
 				this.scoreTransparency = 0;
 			}
 
 			if (this.winner != null) {
+				if (!this.winWasPlaying && this.soundOn) {
+					this.endWhistle.play();
+					this.winCheer.play();
+				}
+				this.winWasPlaying = true;
 				this.winnerTextScale = this.lerp(this.winnerTextScale, 160, 4 * delta);
 
 				var fillStyle = 'rgba(30, 60, 210)';
@@ -466,14 +503,29 @@ Vue.createApp({
 				ctx.fillText(winText, (this.gameWidth*0.5) - (winnerTextScale.width*0.5), (this.gameHeight*0.5) + (winnerTextHeight*0.5));
 			} else {
 				this.winnerTextScale = 20;
+				this.winWasPlaying = false;
+			}
+
+			const qrWidth = 150;
+			if (this.spectating && this.qrImg && this.qrImg.complete) {
+				ctx.drawImage(this.qrImg, this.gameWidth-qrWidth-20, 20, qrWidth, qrWidth);
+
+				ctx.font = `60px Bebas Neue`;
+				ctx.fillStyle = `rgba(0,0,0,0.75)`
+				const joinTextScale = ctx.measureText("Join in!");
+				const joinTextHeight = joinTextScale.actualBoundingBoxAscent + joinTextScale.actualBoundingBoxDescent;
+				ctx.lineWidth = 18;
+
+				ctx.fillText("Join in!", ((this.gameWidth - qrWidth - joinTextScale.width - 35)), 40 + joinTextHeight * 0.5);
 			}
 		},
-
+		/*
 		sendInput(action) {
 			if (!this.joined) return;
 			if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
 			this.socket.send(JSON.stringify({ action }));
 		}
+		*/
 	},
 
 	mounted() {
@@ -492,6 +544,23 @@ Vue.createApp({
 		this.ballIcon.src = "images/Ball.png";
 		this.ringIcon = new Image();
 		this.ringIcon.src = "images/Ring.png";
+		this.qrImg = new Image();
+		this.qrImg.src = "images/QR.png";
+
+		this.crowdLoop = new Audio('audio/crowd_loop.ogg');
+		this.crowdLoop.volume = 0.2;
+		this.crowdLoop.loop = true;
+		this.goalCheer = new Audio('audio/goal_cheer.mp3');
+		this.goalCheer.volume = 0.6;
+		this.winCheer = new Audio('audio/win_cheer.mp3');
+		this.winCheer.volume = 0.6;
+		this.endWhistle = new Audio('audio/end_whistle.mp3');
+		this.ballHit = new Audio('audio/ball_hit.mp3');
+		this.ballHit.volume = 0.35
+		this.ballHit2 = new Audio('audio/ball_hit2.mp3');
+		this.ballHit2.volume = 0.35
+		this.ballHit3 = new Audio('audio/ball_hit3.mp3');
+		this.ballHit3.volume = 0.35
 	
 		window.addEventListener('mousedown', this.onPointerDown);
 		window.addEventListener('mousemove', this.onPointerMove);
@@ -502,6 +571,19 @@ Vue.createApp({
 		window.addEventListener('touchmove', this.onTouchMove, { passive: false });
 		window.addEventListener('touchend', this.onTouchEnd);
 		window.addEventListener('touchcancel', this.onTouchEnd);
+
+		document.addEventListener('mousedown', () => { // For showcase purposes, this is only available on PC since everyone else will probably be on mobile.
+			this.soundOn = true;
+			this.crowdLoop.play();
+		}, { once: true });
+
+		window.addEventListener('keydown', (e) => { // This too
+			if (e.key.toLowerCase() === 'p') {
+				this.spectating = !this.spectating;
+			} else if (e.key.toLowerCase() === 'm') {
+				this.hideMenu = !this.hideMenu;
+			}
+		});		
 	
 		this.gameLoop();
 	}	

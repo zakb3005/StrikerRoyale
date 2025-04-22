@@ -405,7 +405,7 @@ wss.on('connection', (ws) => {
 setInterval(() => {
 	Engine.update(engine, 1000 / 60);
 
-    if (goalScored.team == null) {
+    if (goalScored.team == null && winner == null) {
         let bx = ball.position.x;
         let by = ball.position.y;
         by = clamp(by, ballRadius, bounds.height - ballRadius);
