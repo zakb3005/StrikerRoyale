@@ -59,8 +59,8 @@ Vue.createApp({
 
 	methods: {
 		connectSocket() {
-			//this.socket = new WebSocket("ws://localhost:3000");
-			this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
+			this.socket = new WebSocket("ws://localhost:3000");
+			//this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
 
 			this.socket.addEventListener("open", () => {
 				console.log("Connected to server");
@@ -222,6 +222,11 @@ Vue.createApp({
 			}
 			const delta = (timestamp - this.lastTimestamp) / 1000;
 			this.lastTimestamp = timestamp;
+
+			if (this.soundOn && this.crowdLoop && this.crowdLoop.currentTime >= 16) {
+				this.crowdLoop.currentTime = 0.1;
+				this.crowdLoop.play();
+			}
 
 			this.rotation = (window.innerWidth <= 540 || window.matchMedia('(orientation: portrait)').matches) ? (this.myPlayerId && this.players[this.myPlayerId].team === "B" ?  Math.PI * 0.5 : -Math.PI * 0.5): 0;
 
