@@ -204,6 +204,7 @@ Vue.createApp({
 		},
 
 		playBallHitSound() {
+			if (!this.soundOn) return;
 			const sources = [this.ballHit, this.ballHit2, this.ballHit3];
 			const original = sources[Math.floor(Math.random() * sources.length)];
 		
@@ -574,11 +575,11 @@ Vue.createApp({
 
 		if (!('ontouchstart' in window)) {
 			window.addEventListener('keydown', (e) => {
-				if (e.key.toLowerCase() === 'p') {
+				if (e.key === 'P') {
 					this.spectating = !this.spectating;
-				} else if (e.key.toLowerCase() === 'm') {
+				} else if (e.key === 'M') {
 					this.hideMenu = !this.hideMenu;
-				} else if (e.key.toLowerCase() === 'n') {
+				} else if (e.key === 'N') {
 					this.soundOn = true;
 					this.crowdLoop.play();
 				}
