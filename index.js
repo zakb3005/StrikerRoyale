@@ -8,6 +8,9 @@ const CATEGORY_PLAYER  = 0x0002;
 const CATEGORY_BALL    = 0x0004;
 const CATEGORY_PLAYER_WALL = 0x0008;
 
+let lastBallHitTime = 0;
+const BALL_HIT_COOLDOWN = 200;
+
 const app = express();
 app.use(express.static('public'));
 
@@ -279,6 +282,7 @@ function checkGoal() {
 resetField();
 
 Events.on(engine, 'collisionStart', (event) => {
+	const now = Date.now();
 	for (const pair of event.pairs) {
 		const { bodyA, bodyB } = pair;
 
@@ -297,6 +301,14 @@ Events.on(engine, 'collisionStart', (event) => {
                     break;
                 }
             }
+
+			if (now - lastBallHitTime >= BALL_HIT_COOLDOWN) {
+				wss.clients.forEach((client) => {
+					if (client.readyState === WebSocket.OPEN) {
+						client.send(JSON.stringify({ type: 'ballHit' }));
+					}
+				});
+			}
         }        
 	}
 });

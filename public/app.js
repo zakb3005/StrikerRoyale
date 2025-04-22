@@ -572,18 +572,18 @@ Vue.createApp({
 		window.addEventListener('touchend', this.onTouchEnd);
 		window.addEventListener('touchcancel', this.onTouchEnd);
 
-		document.addEventListener('mousedown', () => { // For showcase purposes, this is only available on PC since everyone else will probably be on mobile.
-			this.soundOn = true;
-			this.crowdLoop.play();
-		}, { once: true });
-
-		window.addEventListener('keydown', (e) => { // This too
-			if (e.key.toLowerCase() === 'p') {
-				this.spectating = !this.spectating;
-			} else if (e.key.toLowerCase() === 'm') {
-				this.hideMenu = !this.hideMenu;
-			}
-		});		
+		if (!('ontouchstart' in window)) {
+			window.addEventListener('keydown', (e) => {
+				if (e.key.toLowerCase() === 'p') {
+					this.spectating = !this.spectating;
+				} else if (e.key.toLowerCase() === 'm') {
+					this.hideMenu = !this.hideMenu;
+				} else if (e.key.toLowerCase() === 'n') {
+					this.soundOn = true;
+					this.crowdLoop.play();
+				}
+			});
+		};
 	
 		this.gameLoop();
 	}	
