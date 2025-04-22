@@ -59,8 +59,8 @@ Vue.createApp({
 
 	methods: {
 		connectSocket() {
-			this.socket = new WebSocket("ws://localhost:3000");
-			//this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
+			//this.socket = new WebSocket("ws://localhost:3000");
+			this.socket = new WebSocket('https://s25-websocket-zakb3005-production.up.railway.app')
 
 			this.socket.addEventListener("open", () => {
 				console.log("Connected to server");
