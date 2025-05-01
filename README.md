@@ -14,4 +14,4 @@ Striker Royale is a real-time, physics-based multiplayer soccer game built from 
 - **Mouse or Touch**: Drag to aim and shoot your icon
 - **Scoring**: Shoot the ball into the opposing teams goal. 3 Goals to win
 
-![Uploading image.png…]()
+![image](https://github.com/user-attachments/assets/194c3350-e812-4a3e-aa3f-c955336c964f)
